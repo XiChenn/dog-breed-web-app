@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
 <head>
-<meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dog Breed</title>
 <script type="text/javascript">
 const fileReader = new FileReader();
@@ -9,6 +10,7 @@ const fileReader = new FileReader();
 fileReader.onload = event => {
   const image = new Image();
   image.src = event.target.result;
+  document.getElementById("upload-Preview").src = image.src;
 
   image.onload = () => {
       const canvas = document.createElement("canvas");
@@ -18,13 +20,14 @@ fileReader.onload = event => {
       const context = canvas.getContext("2d");
       context.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height);
       const compressedImage = canvas.toDataURL("image/jpeg");
-      document.getElementById("upload-Preview").src = compressedImage;
 
       let xhr = new XMLHttpRequest();
 
       xhr.onreadystatechange = function() {
         if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
-           document.getElementById("result").innerHTML = xhr.responseText.substring(10).replace('"}', '');
+           let breed = xhr.responseText.substring(10).replace('"}', '');
+           breed = breed.toLowerCase().split(' ').map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
+           document.getElementById("result").innerHTML = breed;
         }
     };
 
@@ -40,23 +43,55 @@ const loadImageFile = () => {
   fileReader.readAsDataURL(uploadFile);
 }
 </script>
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial;
+  font-size: 17px;
+}
+
+.container {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.container img {vertical-align: middle;}
+
+.container .content {
+  position: absolute;
+  bottom: 0;
+  background: rgb(0, 0, 0); /* Fallback color */
+  background: rgba(0, 0, 0, 0.5); /* Black background with 0.5 opacity */
+  color: #f1f1f1;
+  width: 100%;
+  padding: 20px;
+}
+
+.container .center {
+  text-align: center;
+}
+</style>
 </head>
 
 <body>
-  <form name="uploadForm" action="/upload" method="post">
-    <table>
-      <tbody>
-        <tr>
-          <td><input name="image-file" id="file"  accept="image/*" type="file" onchange=loadImageFile() /></td>
-        </tr>
-         <tr>
-          <td><img id="upload-Preview"/></td>
-        </tr>
-        <tr>
-          <div id="result" />
-        </tr>
-      </tbody>
-    </table>
-  </form>
+
+    <div class="container">
+        <div class="center">
+            <h2>Recognize a Dog Breed</h2>
+        </div>
+        <img id="upload-Preview" src="static/images/canvas_grid.jpg" style="width:100%;"/>
+        <div class="content">
+            <h1><div id="result" /></h1>
+        </div>
+        <div class="upload-btn-wrapper">
+            <button class="btn">Choose a Dog Photo</button>
+            <input name="image-file" id="file"  accept="image/*" type="file" onchange=loadImageFile(); class="button" />
+        </div>
+    </div>
+
 </body>
 </html>
